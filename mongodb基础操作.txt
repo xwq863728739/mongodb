@@ -1,0 +1,98 @@
+安装mongodb
+1.开启服务
+  在bin目录同级目录下创建data文件夹,data文件夹中创建db和log两个文件夹
+  >mongodb\bin mongod.exe(或者mongod) --dbpath=D:\mongodb\data\db
+2.进入mongodb命令终端
+  >mongodb\bin mongo(或者mongo.exe)
+
+
+数据库操作:
+  1.查看数据库
+    show dbs
+    show databases
+  2.删除数据库
+    use 数据库名
+    db.dropDatabase()
+  3.复制数据库
+    use 数据库名
+    db.copyDatabase('firstBase','secondBase')
+  4修改数据库名
+  没有直接的方法，只有通过copy再删除:
+    use 数据库名
+    db.copyDatabase('old_name', 'new_name'); 
+    use old_name 
+    db.dropDatabase();
+  5.创建数据库(刚创建的数据库终端不会显示,需要插入数据)
+    use 数据库名  (注意:若数据库存在,则表示使用数据库,不存在则表示新建数据库)
+  6.查看当前使用的数据库
+    db
+    db.getName()
+  7.退出
+    exit
+  8.查看帮助
+    help()
+集合collection操作
+  1.创建集合
+    use 数据库名
+    db.createCollection(集合名)  创建一个空的集合
+    db.集合名.insert({name:'sharp',age:20}  创建带数据的集合
+  2.查看集合
+    show collections
+  3.删除集合
+    db.drop(集合名)
+  4.修改集合名
+    没有直接的方法
+文档的操作
+  1.创建文档
+    use 数据库名
+    1.insert
+      1.插入一条数据
+        db.集合名.insert({name:'sharp'})
+      2.插入多条数据
+        db.集合名.insert([{},{},{}...])
+    2.save
+      db.集合名.save({name:'lily'})  
+    save与insert的区别:
+      save指定文档的id,可以对文档数据进行修改,而insert会报错
+  2.修改文档
+    1.save 需要指定id,不太好
+    2.update
+      db.集合名.update({name:'sharp'},{age:20})  age会覆盖原有所有数据
+      db.集合名.update({name:'sharp'},{$set:{age:20}})  $set 只会修改age,存在则修改,不存在新增,不会覆盖其他数据
+      db.集合名.update({name:'sharp'},{$inc:{age:20}})  $inc 在age的基础上加上一个值
+      db.集合名.update({name:'sharp'},{upsert:true}) upsert:true 若查询的数据不存在则新建一条
+      db.集合名.update({name:'sharp'},{age:77},{multi:true}) multi:true 允许修改多条数据
+      db.集合名.update({name:'sharp'},{$unset:{age:20}},false,true) 删除某个文档的指定字段,false -- upsert,true -- multi
+  3.查看文档
+      db.集合名.find()  查看集合中的所有文档
+      db.集合名.findOne() 查看第一条数据
+      db.集合名.find().count() 查看所有数据的条数
+      > db.student.find({name:'sharp'},{name:1}) 查看name为sharp的文档,name:1表示只显示name字段
+      > db.student.find(null,{name:1,age:1}) 查看所有文档的name和age字段
+  4.删除文档
+      db.集合名.remove({name:'sharp'}) 删除所有name为sharp的文档
+      db.集合名.remove({name:'sharp'},{justOne:true}) 删除一条name为sharp的文档
+查询
+  1.比较运算符
+    大于 $gt
+    小于 $lt
+    大于等于 $gte
+    小于等于 $lte
+    如:> db.student.find({age:{$lt:40,$gt:20}})
+  2.逻辑运算符  
+    且 {},{},...
+    或 {$or:[{},{}...]}
+    如:> db.student.update({$or:[{name:'sharp1'},{name:'sharp'}]},{$set:{age:77}}{multi:true})
+  3.模糊查询
+    db.集合名.find(name:/ar/)  查询所有name中包含ar字符的文档
+    db.集合名.find(name:/^ar/)  查询所有name中以ar字符开头的文档
+    db.集合名.find(name:/ar$/)  查询所有name中以ar字符结尾的文档
+排序
+  > db.student.find().sort({age:1}) 按照age从小到大排序
+  > db.student.find().sort({age:-1}) 按照age从大到小排序
+分页
+  db.集合名.find().limit(2)  显示前两条数据
+  db.集合名.find().skip(2)  跳过前两条数据显示后面的所有数据
+  # 跳过n条数据读取m条数据
+  > db.student.find().skip(n).limit(m)
+    
